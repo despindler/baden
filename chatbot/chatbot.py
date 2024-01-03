@@ -4,6 +4,8 @@ import re
 import openai
 from langchain.vectorstores import Chroma
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.chat_models import ChatOpenAI
+from langchain.chains import RetrievalQA
 
 from .properties import OPENAI_KEY, OPENAI_MODEL
 from .persistence import Persistence
@@ -74,8 +76,14 @@ class Chatbot:
 
         # LangChain
         embedding = OpenAIEmbeddings(openai_api_key=OPENAI_KEY)
-        self._vectordb = Chroma(
+        vectordb = Chroma(
             persist_directory=vectordb_directory, embedding_function=embedding
+        )
+        llm = ChatOpenAI(
+            openai_api_key=OPENAI_KEY, model_name=OPENAI_MODEL, temperature=0.3
+        )
+        self._qa_chain = RetrievalQA.from_chain_type(
+            llm, retriever=vectordb.as_retriever()
         )
 
     def _append_assistant(self, content: str) -> None:
@@ -94,11 +102,6 @@ class Chatbot:
         response: str = chat.choices[0].message.content
         logging.info(response)
         return response
-    
-    def _openai(self, docs) -> str:
-        messages = self._persistence.messages_retrieve(with_system=True)
-        messages.append(docs)
-        return None
 
     def _split_assistant_says(self, assistant_says: str) -> list[str]:
         # happily generated with ChatGPT :-)
@@ -150,18 +153,14 @@ class Chatbot:
         if user_says is None:
             raise RuntimeError("user_says must not be None")
         self._append_user(user_says)
-        assistant_says: str = self._openai()
+
+        response = self._qa_chain({"query": user_says})
+        assistant_says = response["result"]
+
         assistant_says_list: list[str] = self._split_assistant_says(assistant_says)
         for assistant_says_list_entry in assistant_says_list:
             self._append_assistant(assistant_says_list_entry)
         return assistant_says_list
-
-    def inquire(self, inquiry: str) -> list[str]:
-        if inquiry is None:
-            raise RuntimeError("inquiry must not be None")
-        docs = self._vectordb.max_marginal_relevance_search(inquiry, fetch_k=20, k=10)
-
-        return None
 
     def reset(self) -> None:
         self._persistence.reset()
