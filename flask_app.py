@@ -2,7 +2,7 @@ from flask import Flask, jsonify, render_template, request
 
 from chatbot.chatbot import Chatbot
 
-PYTHONANYWHERE_USERNAME = "carvice"
+PYTHONANYWHERE_USERNAME = "baden"
 PYTHONANYWHERE_WEBAPPNAME = "mysite"
 
 app = Flask(__name__)
@@ -26,6 +26,11 @@ def info_retrieve(type_id: str, user_id: str):
         + "/"
         + PYTHONANYWHERE_WEBAPPNAME
         + "/database/chatbot.db",
+        vectordb_directory="/home/"
+        + PYTHONANYWHERE_USERNAME
+        + "/"
+        + PYTHONANYWHERE_WEBAPPNAME
+        + "/chroma/",
         type_id=type_id,
         user_id=user_id,
     )
@@ -41,6 +46,11 @@ def conversation_retrieve(type_id: str, user_id: str):
         + "/"
         + PYTHONANYWHERE_WEBAPPNAME
         + "/database/chatbot.db",
+        vectordb_directory="/home/"
+        + PYTHONANYWHERE_USERNAME
+        + "/"
+        + PYTHONANYWHERE_WEBAPPNAME
+        + "/chroma/",
         type_id=type_id,
         user_id=user_id,
     )
@@ -63,6 +73,11 @@ def response_for(type_id: str, user_id: str):
         + "/"
         + PYTHONANYWHERE_WEBAPPNAME
         + "/database/chatbot.db",
+        vectordb_directory="/home/"
+        + PYTHONANYWHERE_USERNAME
+        + "/"
+        + PYTHONANYWHERE_WEBAPPNAME
+        + "/chroma/",
         type_id=type_id,
         user_id=user_id,
     )
@@ -82,6 +97,11 @@ def reset(type_id: str, user_id: str):
         + "/"
         + PYTHONANYWHERE_WEBAPPNAME
         + "/database/chatbot.db",
+        vectordb_directory="/home/"
+        + PYTHONANYWHERE_USERNAME
+        + "/"
+        + PYTHONANYWHERE_WEBAPPNAME
+        + "/chroma/",
         type_id=type_id,
         user_id=user_id,
     )
