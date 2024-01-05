@@ -6,6 +6,7 @@ from langchain.vectorstores import Chroma
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
+from langchain.prompts import PromptTemplate
 
 from .properties import OPENAI_KEY, OPENAI_MODEL
 from .persistence import Persistence
@@ -82,8 +83,10 @@ class Chatbot:
         llm = ChatOpenAI(
             openai_api_key=OPENAI_KEY, model_name=OPENAI_MODEL, temperature=0.3
         )
+        template = type_role + " " + instance_context + " {context}"
+        prompt = PromptTemplate.from_template(template)
         self._qa_chain = RetrievalQA.from_chain_type(
-            llm, retriever=vectordb.as_retriever()
+            llm, retriever=vectordb.as_retriever(), chain_type_kwargs={"prompt": prompt}
         )
 
     def _append_assistant(self, content: str) -> None:
